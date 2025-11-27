@@ -85,4 +85,4 @@ apps/extension
 
 # Scripts (included selectively)
 scripts/test*
-scripts/dev*
+#scripts/dev*

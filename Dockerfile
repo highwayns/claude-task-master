@@ -1,7 +1,7 @@
 # =============================================================================
 # Base Stage - Common dependencies
 # =============================================================================
-FROM node:18-alpine AS base
+FROM node:20-alpine AS base
 
 # Install essential build tools
 RUN apk add --no-cache git
@@ -50,7 +50,7 @@ RUN npm run build
 # =============================================================================
 # Production Stage - Final production image
 # =============================================================================
-FROM node:18-alpine AS production
+FROM node:20-alpine AS production
 
 # Install runtime essentials
 RUN apk add --no-cache \
@@ -80,10 +80,10 @@ COPY --from=builder /app/LICENSE ./
 COPY --from=builder /app/CHANGELOG.md ./
 
 # Copy workspace packages (only built artifacts)
-COPY --from=builder /app/apps/cli/dist ./apps/cli/dist
-COPY --from=builder /app/apps/mcp/dist ./apps/mcp/dist
-COPY --from=builder /app/packages/tm-core/dist ./packages/tm-core/dist
-COPY --from=builder /app/packages/tm-bridge/dist ./packages/tm-bridge/dist
+#COPY --from=builder /app/apps/cli/dist ./apps/cli/dist
+#COPY --from=builder /app/apps/mcp/dist ./apps/mcp/dist
+#COPY --from=builder /app/packages/tm-core/dist ./packages/tm-core/dist
+#COPY --from=builder /app/packages/tm-bridge/dist ./packages/tm-bridge/dist
 COPY --from=builder /app/packages/build-config/dist ./packages/build-config/dist
 
 # Set ownership
