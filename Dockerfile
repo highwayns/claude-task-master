@@ -8,28 +8,33 @@ RUN apk add --no-cache git
 
 WORKDIR /app
 
-# Copy package files for dependency installation
-COPY package*.json ./
-COPY .npmrc* ./
-COPY turbo.json ./
-COPY tsconfig.json ./
-COPY tsdown.config.ts ./
-COPY biome.json ./
+# Copy root package files first
+COPY package.json package-lock.json ./
 
-# Copy workspace package files
+# Copy configuration files
+COPY turbo.json tsconfig.json tsdown.config.ts biome.json ./
+
+# Copy workspace package files - create directories first
+RUN mkdir -p apps/cli apps/mcp packages
+
+# Copy app package files
 COPY apps/cli/package*.json ./apps/cli/
 COPY apps/mcp/package*.json ./apps/mcp/
-COPY apps/docs/package*.json ./apps/docs/
-COPY apps/extension/package*.json ./apps/extension/
-COPY packages/*/package*.json ./packages/*/
+
+# Copy package subdirectories - list them explicitly instead of wildcard
+# Adjust these based on your actual package structure
+COPY packages/tm-core/package*.json ./packages/tm-core/
+COPY packages/tm-bridge/package*.json ./packages/tm-bridge/
+COPY packages/build-config/package*.json ./packages/build-config/
 
 # =============================================================================
 # Dependencies Stage - Install all dependencies
 # =============================================================================
 FROM base AS dependencies
 
-# Install all dependencies (including devDependencies for building)
-RUN npm ci --include=dev
+# Clear npm cache and install with better error reporting
+RUN npm cache clean --force && \
+    npm ci --include=dev --loglevel=verbose
 
 # =============================================================================
 # Build Stage - Build the application
@@ -41,14 +46,6 @@ COPY . .
 
 # Build the project
 RUN npm run build
-
-# =============================================================================
-# Production Dependencies Stage - Install only production dependencies
-# =============================================================================
-FROM base AS prod-dependencies
-
-# Install only production dependencies
-RUN npm ci --only=production --ignore-scripts
 
 # =============================================================================
 # Production Stage - Final production image
@@ -71,7 +68,7 @@ WORKDIR /app
 COPY --from=base /app/package*.json ./
 
 # Copy production dependencies
-COPY --from=prod-dependencies /app/node_modules ./node_modules
+COPY --from=dependencies /app/node_modules ./node_modules
 
 # Copy built artifacts from builder
 COPY --from=builder /app/dist ./dist
