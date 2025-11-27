@@ -1,0 +1,88 @@
+# Dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build outputs
+dist
+build
+.turbo
+*.tsbuildinfo
+
+# Testing
+coverage
+.nyc_output
+tests/e2e/results
+tests/e2e/logs
+
+# IDE and editors
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+.cursor
+.claude
+
+# Git
+.git
+.gitignore
+.gitattributes
+.github
+
+# Environment files
+.env
+.env.local
+.env.*.local
+.env.example
+
+# Documentation and examples
+*.md
+!README.md
+!LICENSE
+!CHANGELOG.md
+docs
+apps/docs
+
+# Task Master specific
+.taskmaster
+.cursorignore
+.coderabbit.yaml
+.mcp.json
+.cursor/
+.kiro/
+
+# CI/CD
+.github
+.changeset
+
+# Test files
+test-*.js
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+__tests__
+__mocks__
+
+# Misc
+*.log
+.npmignore
+sonar-project.properties
+output.json
+llms-install.md
+context/
+
+# Extension development
+apps/extension
+
+# Scripts (included selectively)
+scripts/test*
+scripts/dev*

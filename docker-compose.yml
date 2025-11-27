@@ -1,0 +1,110 @@
+version: '3.8'
+
+services:
+  # Production MCP Server
+  task-master-mcp:
+    build:
+      context: .
+      target: mcp
+      dockerfile: Dockerfile
+    image: task-master-ai:latest
+    container_name: task-master-mcp
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - XAI_API_KEY=${XAI_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY}
+      - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
+      - OLLAMA_API_KEY=${OLLAMA_API_KEY}
+    volumes:
+      # Mount taskmaster data directory for persistence
+      - taskmaster-data:/home/taskmaster/.taskmaster
+      # Optional: Mount project directory if using with local projects
+      # - ./projects:/workspace
+    networks:
+      - taskmaster-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "console.log('healthy')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+  # CLI Service (for running commands)
+  task-master-cli:
+    build:
+      context: .
+      target: cli
+      dockerfile: Dockerfile
+    image: task-master-cli:latest
+    container_name: task-master-cli
+    environment:
+      - NODE_ENV=production
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - XAI_API_KEY=${XAI_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY}
+      - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
+      - OLLAMA_API_KEY=${OLLAMA_API_KEY}
+    volumes:
+      # Mount project directory for CLI operations
+      - ./projects:/workspace
+      - taskmaster-data:/home/taskmaster/.taskmaster
+    working_dir: /workspace
+    networks:
+      - taskmaster-network
+    profiles:
+      - cli
+    # Override with actual command when running
+    # Example: docker-compose run task-master-cli list
+
+  # Development Service (with hot reload)
+  task-master-dev:
+    build:
+      context: .
+      target: development
+      dockerfile: Dockerfile
+    image: task-master-dev:latest
+    container_name: task-master-dev
+    environment:
+      - NODE_ENV=development
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - XAI_API_KEY=${XAI_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY}
+      - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
+      - OLLAMA_API_KEY=${OLLAMA_API_KEY}
+    volumes:
+      # Mount source for development
+      - .:/app
+      - /app/node_modules
+      - /app/dist
+    ports:
+      - "3000:3000"
+      - "8080:8080"
+    networks:
+      - taskmaster-network
+    profiles:
+      - dev
+    command: npm run dev
+
+networks:
+  taskmaster-network:
+    driver: bridge
+
+volumes:
+  taskmaster-data:
+    driver: local
